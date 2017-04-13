@@ -1,0 +1,74 @@
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8">
+    <title>DES算法</title>
+    <script src="https://code.jquery.com/jquery-1.11.3.js"></script>
+    <script src="/static/js/tripledes.js"></script>
+    <script src="/static/js/mode-ecb-min.js"></script>
+    <script>
+
+        function toEncryptByDES() {
+            var message = $("#taText")[0].value;
+            var key = $("#txtKey")[0].value;
+            $("#taCipher")[0].value = encryptByDES(message,key);
+        }
+
+        function encryptByDES(message, key) {
+
+            var keyHex = CryptoJS.enc.Utf8.parse(key);
+
+            var encrypted = CryptoJS.DES.encrypt(message, keyHex, {
+                mode: CryptoJS.mode.ECB,
+                padding: CryptoJS.pad.Pkcs7
+            });
+            return encrypted.toString();
+        }
+
+        function toDecryptByDES() {
+            var ciphertext = $("#taCipher")[0].value;
+            var key = $("#txtKey")[0].value;
+            $("#taText")[0].value = decryptByDES(ciphertext,key);
+        }
+
+        function decryptByDES(ciphertext, key) {
+
+            var keyHex = CryptoJS.enc.Utf8.parse(key);
+            // direct decrypt ciphertext
+            var decrypted = CryptoJS.DES.decrypt({
+                ciphertext: CryptoJS.enc.Base64.parse(ciphertext)
+            }, keyHex, {
+                mode: CryptoJS.mode.ECB,
+                padding: CryptoJS.pad.Pkcs7
+            });
+            return decrypted.toString(CryptoJS.enc.Utf8);
+        }
+        function toBackDecryptByDES() {
+            $.ajax({
+                type: "POST",
+                url: "/decrypt",
+                data: {text:$("#taCipher")[0].value,key:$("#txtKey")[0].value},
+                success: function (obj) {
+                    $("#backText")[0].value=obj;
+                }
+            });
+        }
+
+    </script>
+</head>
+
+<body>
+请输入加(解)密密钥:<input id="txtKey" type="text" onfocus="this.select()" value="47944980" size="10">(*八位密钥)<br>
+
+未加密文本:<br>
+<textarea id="taText">Hi,I'm meixuexiang.</textarea>
+<input type="button" value="clear" onclick="document.all[this.sourceIndex-1].value=''"><br>
+<input type="button" value="Encrypt" onclick="toEncryptByDES()">&nbsp;&nbsp;&nbsp;
+<input type="button" value="Decrypt" onclick="toDecryptByDES()"><br><br>
+加密后文本:<br>
+<textarea id="taCipher"></textarea>
+<input type="button" value="clear" onclick="document.all[this.sourceIndex-1].value=''"><br>
+<input type="button" value="后台验证" onclick="toBackDecryptByDES()"><br><br>&nbsp;&nbsp;&nbsp;
+后台解密后文本:<br>
+<textarea id="backText"></textarea>
+</body>
+</html>
